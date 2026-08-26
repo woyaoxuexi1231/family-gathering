@@ -1,0 +1,32 @@
+[project]
+name = "my-family-gathering"
+version = "0.1.0"
+description = "家庭聚餐邀约 API — 练习版（对照 family_gathering 抄写）"
+readme = "README.md"
+authors = [
+    { name = "hulei", email = "154347188@qq.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.141.1",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "uvicorn[standard]>=0.52.4",
+]
+
+[project.scripts]
+my-family-gathering = "my_family_gathering.main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

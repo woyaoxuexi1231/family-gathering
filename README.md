@@ -1,22 +1,47 @@
 # family-gathering
 
-家庭聚餐邀约相关项目集合。
+家庭聚餐邀约 — Python 学习项目。
 
-## 项目
+## 结构
 
-| 目录 | 说明 |
-|------|------|
-| [`family-gathering/`](family-gathering/) | 完整版：参与人报名、认领菜品、Web 页面 + API |
-| [`my-family-gathering/`](my-family-gathering/) | 个人练习版（FastAPI 脚手架） |
+```text
+backend/
+  family_gathering/      # 参考版后端（完整）
+  my_family_gathering/   # 练习版后端（空壳 + TODO）
+frontend/                # 一份前端，共用
+LEARNING.md
+```
 
-## 快速开始（完整版）
+端口统一：后端 **8800**，前端 **5173**。一次只跑一个后端。
+
+## 快速开始
+
+**终端 1 — 后端（先跑参考版）**
 
 ```powershell
-cd family-gathering
+cd backend/family_gathering
 uv sync --group dev
 uv run uvicorn family_gathering.main:app --reload --port 8800
 ```
 
-浏览器打开 <http://127.0.0.1:8800/> 即可使用。
+练习时改成：
 
-详细说明见各子目录下的 `README.md`。
+```powershell
+cd backend/my_family_gathering
+uv sync --group dev
+uv run uvicorn my_family_gathering.main:app --reload --port 8800
+```
+
+**终端 2 — 前端**
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+打开 http://127.0.0.1:5173/
+
+## 怎么学
+
+见 [`LEARNING.md`](LEARNING.md)：对照 `backend/family_gathering` 往 `backend/my_family_gathering` 里抄，抄完切换启动命令，用同一份前端验收。
