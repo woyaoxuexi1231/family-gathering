@@ -3,9 +3,7 @@ import pytest
 from family_gathering.config import Settings
 from family_gathering.errors import ConflictError, NotFoundError
 from family_gathering.persistence.store import GatheringStore
-from family_gathering.services import dishes as dish_service
-from family_gathering.services import participants as participant_service
-from family_gathering.services import signup as signup_service
+from family_gathering.services import entries as entry_service
 
 
 @pytest.fixture
@@ -19,83 +17,39 @@ def store(tmp_path) -> GatheringStore:
     return GatheringStore(settings.data_path, settings)
 
 
-def test_add_participant(store: GatheringStore) -> None:
-    person = store.update(
-        lambda g: participant_service.add_participant(g, name="小明", headcount=2)
+def test_empty_gathering(store: GatheringStore) -> None:
+    gathering = store.load()
+    assert gathering.entries == []
+
+
+def test_add_entry(store: GatheringStore) -> None:
+    entry = store.update(
+        lambda g: entry_service.add_entry(g, name="小明", dish="红烧肉", headcount=2)
     )
-    assert person.name == "小明"
-    assert person.headcount == 2
+    assert entry.name == "小明"
+    assert entry.dish == "红烧肉"
+    assert entry.headcount == 2
 
     gathering = store.load()
-    assert len(gathering.participants) == 1
+    assert len(gathering.entries) == 1
 
 
 def test_duplicate_name_rejected(store: GatheringStore) -> None:
-    store.update(lambda g: participant_service.add_participant(g, name="小明"))
+    store.update(lambda g: entry_service.add_entry(g, name="小明", dish="红烧肉"))
 
     with pytest.raises(ConflictError):
-        store.update(lambda g: participant_service.add_participant(g, name="小明"))
+        store.update(lambda g: entry_service.add_entry(g, name="小明", dish="清蒸鱼"))
 
 
-def test_remove_participant_unclaims_dish(store: GatheringStore) -> None:
-    person = store.update(lambda g: participant_service.add_participant(g, name="小红"))
-    dish = store.update(lambda g: dish_service.add_dish(g, name="红烧肉"))
-    store.update(lambda g: dish_service.claim_dish(g, dish.id, person.id))
+def test_remove_entry(store: GatheringStore) -> None:
+    entry = store.update(
+        lambda g: entry_service.add_entry(g, name="小红", dish="凉拌黄瓜")
+    )
+    store.update(lambda g: entry_service.remove_entry(g, entry.id))
 
-    store.update(lambda g: participant_service.remove_participant(g, person.id))
-
-    gathering = store.load()
-    assert gathering.find_participant(person.id) is None
-    saved_dish = gathering.find_dish(dish.id)
-    assert saved_dish is not None
-    assert saved_dish.claimed_by is None
-    assert saved_dish.status.value == "open"
+    assert store.load().entries == []
 
 
-def test_claim_dish_requires_participant(store: GatheringStore) -> None:
-    dish = store.update(lambda g: dish_service.add_dish(g, name="凉拌黄瓜"))
-
+def test_remove_missing_entry(store: GatheringStore) -> None:
     with pytest.raises(NotFoundError):
-        store.update(lambda g: dish_service.claim_dish(g, dish.id, "missing"))
-
-
-def test_claim_conflict_when_already_claimed(store: GatheringStore) -> None:
-    a = store.update(lambda g: participant_service.add_participant(g, name="甲"))
-    b = store.update(lambda g: participant_service.add_participant(g, name="乙"))
-    dish = store.update(lambda g: dish_service.add_dish(g, name="清蒸鱼"))
-    store.update(lambda g: dish_service.claim_dish(g, dish.id, a.id))
-
-    with pytest.raises(ConflictError):
-        store.update(lambda g: dish_service.claim_dish(g, dish.id, b.id))
-
-
-def test_empty_gathering_meta_from_settings(store: GatheringStore) -> None:
-    gathering = store.load()
-    assert gathering.meta.title == "测试聚餐"
-    assert gathering.participants == []
-    assert gathering.dishes == []
-
-
-def test_add_signup_creates_participant_and_claimed_dish(store: GatheringStore) -> None:
-    signup = store.update(
-        lambda g: signup_service.add_signup(g, name="小明", task="红烧肉", headcount=2)
-    )
-    assert signup.participant.name == "小明"
-    assert signup.task is not None
-    assert signup.task.name == "红烧肉"
-    assert signup.task.claimed_by == signup.participant.id
-
-    signups = signup_service.list_signups(store.load())
-    assert len(signups) == 1
-    assert signups[0].task.name == "红烧肉"
-
-
-def test_remove_signup_deletes_participant_and_dish(store: GatheringStore) -> None:
-    signup = store.update(
-        lambda g: signup_service.add_signup(g, name="小红", task="凉拌黄瓜")
-    )
-    store.update(lambda g: signup_service.remove_signup(g, signup.participant.id))
-
-    gathering = store.load()
-    assert gathering.participants == []
-    assert gathering.dishes == []
+        store.update(lambda g: entry_service.remove_entry(g, "missing"))

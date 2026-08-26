@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     gathering_title: str = "家庭聚餐"
     gathering_when: str = "2026-08-30 18:00"
     gathering_where: str = "家里"
-    gathering_note: str = "欢迎带拿手菜，记得认领想做的菜"
+    gathering_note: str = "欢迎带拿手菜，填上你要做的就行"
 
     data_path: Path = DEFAULT_DATA_PATH
 

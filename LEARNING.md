@@ -9,27 +9,24 @@
 
 | 步骤 | 文件 | 验证 |
 |------|------|------|
-| 1 | `models/enums.py` | — |
-| 2 | `models/gathering.py` | — |
-| 3 | `models/__init__.py` | — |
-| 4 | `errors.py` | — |
-| 5 | `config.py` | 端口保持 8800 |
-| 6 | `persistence/` | — |
-| 7 | `services/participants.py` | — |
-| 8 | `services/dishes.py` | — |
-| 9 | `services/signup.py` | — |
-| 10 | `services/overview.py` | — |
-| 11 | `schemas/` | — |
-| 12 | `api/` | — |
-| 13 | `main.py` | `/docs` 能开 |
+| 1 | `models/gathering.py` | — |
+| 2 | `models/__init__.py` | — |
+| 3 | `errors.py` | — |
+| 4 | `config.py` | 端口保持 8800 |
+| 5 | `persistence/` | — |
+| 6 | `services/entries.py` | — |
+| 7 | `services/overview.py` | — |
+| 8 | `schemas/` | — |
+| 9 | `api/` | — |
+| 10 | `main.py` | `/docs` 能开 |
 
 参考版完整路径示例：
 
-`backend/family_gathering/src/family_gathering/services/signup.py`
+`backend/family_gathering/src/family_gathering/services/entries.py`
 
 练习版对应：
 
-`backend/my_family_gathering/src/my_family_gathering/services/signup.py`
+`backend/my_family_gathering/src/my_family_gathering/services/entries.py`
 
 ## 验收
 
@@ -46,3 +43,4 @@ uv run uvicorn my_family_gathering.main:app --reload --port 8800
 - import：`family_gathering` → `my_family_gathering`
 - 数据文件分开：参考版 `data/gathering.json`，练习版 `data/my_gathering.json`
 - 卡住就并排 diff 两个目录同名文件
+- 聚餐时间地点是死的（写在 `config.py`），可变的只有 `Entry`（谁 + 自己的菜）

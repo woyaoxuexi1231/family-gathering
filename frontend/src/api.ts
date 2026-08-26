@@ -6,39 +6,27 @@ export interface Meta {
 }
 
 export interface OverviewStats {
-  participant_count: number;
-  coming_headcount: number;
-  dish_count: number;
-  open_dish_count: number;
-  claimed_dish_count: number;
+  entry_count: number;
+  headcount_total: number;
+}
+
+export interface Entry {
+  id: string;
+  name: string;
+  dish: string;
+  headcount: number;
+  note: string;
 }
 
 export interface Overview {
   meta: Meta;
   stats: OverviewStats;
+  entries: Entry[];
 }
 
-export interface Participant {
-  id: string;
+export interface EntryCreate {
   name: string;
-  headcount: number;
-  status: string;
-  note: string;
-}
-
-export interface SignupTask {
-  id: string;
-  name: string;
-}
-
-export interface Signup {
-  participant: Participant;
-  task: SignupTask | null;
-}
-
-export interface SignupCreate {
-  name: string;
-  task: string;
+  dish: string;
   headcount: number;
   note: string;
 }
@@ -82,12 +70,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getOverview: () => request<Overview>("/api/overview"),
-  listSignups: () => request<Signup[]>("/api/signups"),
-  createSignup: (body: SignupCreate) =>
-    request<Signup>("/api/signups", {
+  listEntries: () => request<Entry[]>("/api/entries"),
+  createEntry: (body: EntryCreate) =>
+    request<Entry>("/api/entries", {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  deleteSignup: (participantId: string) =>
-    request<void>(`/api/signups/${participantId}`, { method: "DELETE" }),
+  deleteEntry: (entryId: string) =>
+    request<void>(`/api/entries/${entryId}`, { method: "DELETE" }),
 };

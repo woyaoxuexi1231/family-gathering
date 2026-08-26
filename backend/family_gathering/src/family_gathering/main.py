@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from family_gathering.api import dishes, meta, overview, participants, signups
+from family_gathering.api import entries, meta, overview
 from family_gathering.config import get_settings
 from family_gathering.errors import ConflictError, DomainError, NotFoundError
 
@@ -19,8 +19,8 @@ logging.basicConfig(
 
 app = FastAPI(
     title="Family Gathering API",
-    description="单次家庭聚餐：参与人报名 + 分工认领",
-    version="0.2.0",
+    description="单次家庭聚餐：固定信息 + 报名（谁、自己做什么菜）",
+    version="0.3.0",
 )
 
 settings = get_settings()
@@ -33,9 +33,7 @@ app.add_middleware(
 )
 
 app.include_router(meta.router, prefix="/api")
-app.include_router(participants.router, prefix="/api")
-app.include_router(dishes.router, prefix="/api")
-app.include_router(signups.router, prefix="/api")
+app.include_router(entries.router, prefix="/api")
 app.include_router(overview.router, prefix="/api")
 
 

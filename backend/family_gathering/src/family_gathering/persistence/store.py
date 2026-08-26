@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TypeVar
 
 from family_gathering.config import Settings, get_settings
-from family_gathering.models import Gathering, GatheringMeta
+from family_gathering.models import Gathering
 from family_gathering.persistence.codec import gathering_from_dict, gathering_to_dict
 
 logger = logging.getLogger(__name__)
@@ -26,14 +26,14 @@ class GatheringStore:
 
     def load(self) -> Gathering:
         if not self._data_path.exists():
-            gathering = self._empty_gathering()
+            gathering = Gathering()
             self.save(gathering)
             logger.info("初始化数据文件: %s", self._data_path)
             return gathering
 
         raw = self._data_path.read_text(encoding="utf-8")
         if not raw.strip():
-            gathering = self._empty_gathering()
+            gathering = Gathering()
             self.save(gathering)
             return gathering
 
@@ -56,16 +56,6 @@ class GatheringStore:
         result = mutator(gathering)
         self.save(gathering)
         return result
-
-    def _empty_gathering(self) -> Gathering:
-        return Gathering(
-            meta=GatheringMeta(
-                title=self._settings.gathering_title,
-                when=self._settings.gathering_when,
-                where=self._settings.gathering_where,
-                note=self._settings.gathering_note,
-            ),
-        )
 
 
 def get_store() -> GatheringStore:

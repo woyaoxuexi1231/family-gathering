@@ -1,53 +1,30 @@
 from dataclasses import dataclass, field
 from uuid import uuid4
 
-from family_gathering.models.enums import DishStatus, ParticipantStatus
-
 
 def new_id() -> str:
     return uuid4().hex[:12]
 
 
 @dataclass
-class GatheringMeta:
-    title: str
-    when: str
-    where: str
-    note: str = ""
+class Entry:
+    """一条报名：谁来、自己做什么菜。"""
 
-
-@dataclass
-class Participant:
     id: str
     name: str
+    dish: str
     headcount: int = 1
-    status: ParticipantStatus = ParticipantStatus.COMING
     note: str = ""
-
-
-@dataclass
-class Dish:
-    id: str
-    name: str
-    claimed_by: str | None = None
-    servings: str = ""
-    status: DishStatus = DishStatus.OPEN
 
 
 @dataclass
 class Gathering:
-    meta: GatheringMeta
-    participants: list[Participant] = field(default_factory=list)
-    dishes: list[Dish] = field(default_factory=list)
+    """单次聚餐的可变部分：只是报名列表。时间地点等固定信息在 Settings。"""
 
-    def find_participant(self, participant_id: str) -> Participant | None:
-        for person in self.participants:
-            if person.id == participant_id:
-                return person
-        return None
+    entries: list[Entry] = field(default_factory=list)
 
-    def find_dish(self, dish_id: str) -> Dish | None:
-        for dish in self.dishes:
-            if dish.id == dish_id:
-                return dish
+    def find_entry(self, entry_id: str) -> Entry | None:
+        for entry in self.entries:
+            if entry.id == entry_id:
+                return entry
         return None

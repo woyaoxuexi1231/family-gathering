@@ -1,18 +1,18 @@
-import { api, ApiError, type Overview, type Signup } from "./api";
+import { api, ApiError, type Entry, type Overview } from "./api";
 import "./style.css";
 
 type Flash = { kind: "ok" | "err"; text: string } | null;
 
 interface AppState {
   overview: Overview | null;
-  signups: Signup[];
+  entries: Entry[];
   flash: Flash;
   loading: boolean;
 }
 
 const state: AppState = {
   overview: null,
-  signups: [],
+  entries: [],
   flash: null,
   loading: true,
 };
@@ -36,8 +36,8 @@ function renderFlash(flash: Flash): string {
   return `<div class="${cls}" role="${role}">${escapeHtml(flash.text)}</div>`;
 }
 
-function renderSignupList(signups: Signup[]): string {
-  if (signups.length === 0) {
+function renderEntryList(entries: Entry[]): string {
+  if (entries.length === 0) {
     return `
       <div class="empty">
         <div class="empty__icon" aria-hidden="true">🍲</div>
@@ -47,32 +47,28 @@ function renderSignupList(signups: Signup[]): string {
     `;
   }
 
-  const items = signups
-    .map((signup) => {
-      const { participant, task } = signup;
+  const items = entries
+    .map((entry) => {
       const count =
-        participant.headcount > 1
-          ? `<span class="signup-card__count">${participant.headcount} 人</span>`
+        entry.headcount > 1
+          ? `<span class="signup-card__count">${entry.headcount} 人</span>`
           : "";
-      const taskLine = task
-        ? `<p class="signup-card__task">${escapeHtml(task.name)}</p>`
-        : "";
-      const note = participant.note
-        ? `<p class="signup-card__note">${escapeHtml(participant.note)}</p>`
+      const note = entry.note
+        ? `<p class="signup-card__note">${escapeHtml(entry.note)}</p>`
         : "";
 
       return `
         <li class="signup-card">
-          <div class="signup-card__avatar" aria-hidden="true">${escapeHtml(participant.name[0] ?? "?")}</div>
+          <div class="signup-card__avatar" aria-hidden="true">${escapeHtml(entry.name[0] ?? "?")}</div>
           <div class="signup-card__body">
             <div class="signup-card__top">
-              <strong class="signup-card__name">${escapeHtml(participant.name)}</strong>
+              <strong class="signup-card__name">${escapeHtml(entry.name)}</strong>
               ${count}
             </div>
-            ${taskLine}
+            <p class="signup-card__task">${escapeHtml(entry.dish)}</p>
             ${note}
           </div>
-          <button type="button" class="btn btn--ghost btn--sm" data-delete="${escapeHtml(participant.id)}" data-name="${escapeHtml(participant.name)}">取消</button>
+          <button type="button" class="btn btn--ghost btn--sm" data-delete="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}">取消</button>
         </li>
       `;
     })
@@ -125,16 +121,12 @@ function render(): void {
             ? `
           <section class="stats" aria-label="聚餐概况">
             <div class="stat">
-              <span class="stat__n">${stats.participant_count}</span>
+              <span class="stat__n">${stats.entry_count}</span>
               <span class="stat__l">已报名</span>
             </div>
             <div class="stat">
-              <span class="stat__n">${stats.coming_headcount}</span>
+              <span class="stat__n">${stats.headcount_total}</span>
               <span class="stat__l">预计到场</span>
-            </div>
-            <div class="stat">
-              <span class="stat__n">${stats.claimed_dish_count}</span>
-              <span class="stat__l">分工已认领</span>
             </div>
           </section>
         `
@@ -144,18 +136,18 @@ function render(): void {
         <section class="panel panel--form">
           <div class="panel__head">
             <h2>我要参加</h2>
-            <p class="panel__desc">填上你的名字和你要做的事，一步搞定。</p>
+            <p class="panel__desc">填上你是谁、自己做什么菜，就这一条信息。</p>
           </div>
 
-          <form id="signup-form" class="signup-form">
+          <form id="entry-form" class="signup-form">
             <div class="signup-form__row">
               <label class="field">
                 <span class="field__label">你是谁</span>
                 <input name="name" required maxlength="50" placeholder="小明" autocomplete="name">
               </label>
               <label class="field">
-                <span class="field__label">你要做什么</span>
-                <input name="task" required maxlength="80" placeholder="带红烧肉 / 负责洗碗 / 买饮料">
+                <span class="field__label">你做什么菜</span>
+                <input name="dish" required maxlength="80" placeholder="红烧肉">
               </label>
             </div>
             <div class="signup-form__row signup-form__row--compact">
@@ -178,12 +170,12 @@ function render(): void {
         <section class="panel">
           <div class="panel__head panel__head--row">
             <div>
-              <h2>分工清单</h2>
-              <p class="panel__desc">谁来了、各自负责什么，一目了然。</p>
+              <h2>报名列表</h2>
+              <p class="panel__desc">谁来了、各自做什么菜。</p>
             </div>
-            <span class="badge">${state.signups.length} 人</span>
+            <span class="badge">${state.entries.length} 人</span>
           </div>
-          ${state.loading ? `<p class="muted">加载中…</p>` : renderSignupList(state.signups)}
+          ${state.loading ? `<p class="muted">加载中…</p>` : renderEntryList(state.entries)}
         </section>
       </main>
 
@@ -197,7 +189,7 @@ function render(): void {
 }
 
 function bindEvents(): void {
-  const form = document.querySelector<HTMLFormElement>("#signup-form");
+  const form = document.querySelector<HTMLFormElement>("#entry-form");
   form?.addEventListener("submit", onSubmit);
 
   document.querySelectorAll<HTMLButtonElement>("[data-delete]").forEach((button) => {
@@ -209,12 +201,12 @@ async function loadData(): Promise<void> {
   state.loading = true;
   render();
   try {
-    const [overview, signups] = await Promise.all([
+    const [overview, entries] = await Promise.all([
       api.getOverview(),
-      api.listSignups(),
+      api.listEntries(),
     ]);
     state.overview = overview;
-    state.signups = signups;
+    state.entries = entries;
   } catch (error) {
     state.flash = {
       kind: "err",
@@ -232,9 +224,9 @@ async function onSubmit(event: Event): Promise<void> {
   const data = new FormData(form);
 
   try {
-    await api.createSignup({
+    await api.createEntry({
       name: String(data.get("name") ?? "").trim(),
-      task: String(data.get("task") ?? "").trim(),
+      dish: String(data.get("dish") ?? "").trim(),
       headcount: Number(data.get("headcount") ?? 1),
       note: String(data.get("note") ?? "").trim(),
     });
@@ -252,14 +244,14 @@ async function onSubmit(event: Event): Promise<void> {
 
 async function onDelete(event: Event): Promise<void> {
   const button = event.currentTarget as HTMLButtonElement;
-  const participantId = button.dataset.delete;
+  const entryId = button.dataset.delete;
   const name = button.dataset.name ?? "该用户";
-  if (!participantId) return;
+  if (!entryId) return;
 
   if (!window.confirm(`确定取消 ${name} 的报名？`)) return;
 
   try {
-    await api.deleteSignup(participantId);
+    await api.deleteEntry(entryId);
     state.flash = { kind: "ok", text: "已取消报名" };
     await loadData();
   } catch (error) {

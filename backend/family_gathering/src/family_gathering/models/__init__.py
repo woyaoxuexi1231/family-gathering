@@ -1,18 +1,7 @@
-from family_gathering.models.enums import DishStatus, ParticipantStatus
-from family_gathering.models.gathering import (
-    Dish,
-    Gathering,
-    GatheringMeta,
-    Participant,
-    new_id,
-)
+from family_gathering.models.gathering import Entry, Gathering, new_id
 
 __all__ = [
-    "Dish",
-    "DishStatus",
+    "Entry",
     "Gathering",
-    "GatheringMeta",
-    "Participant",
-    "ParticipantStatus",
     "new_id",
 ]
