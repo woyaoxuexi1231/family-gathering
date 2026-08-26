@@ -2,6 +2,12 @@
 # 只有 Entry + Gathering；没有 GatheringMeta / Participant / Dish
 
 from dataclasses import dataclass, field
+from uuid import uuid4
+
+
+def new_id() -> str:
+    return uuid4().hex[:12]
+
 
 
 # 单条报名：谁、做什么菜
