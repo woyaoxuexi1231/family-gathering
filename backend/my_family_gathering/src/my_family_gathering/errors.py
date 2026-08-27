@@ -1,1 +1,17 @@
-# TODO: 抄 ../family_gathering/src/family_gathering/errors.py
+# 自定义异常信息
+
+
+class DomainError(Exception):
+    """业务规则失败。"""
+
+
+class NotFoundError(DomainError):
+    pass
+
+
+class ConflictError(DomainError):
+    pass
+
+
+class ValidationError(DomainError):
+    pass
