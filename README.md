@@ -1,6 +1,10 @@
 # family-gathering
 
-家庭聚餐邀约 — Python 学习项目。
+## 简介 / Introduction
+
+**中文** — 家庭聚餐邀约 —— Python 学习项目。同时提供完整参考版后端与"空壳 + TODO"练习版后端，共享一份前端：对照参考版往练习版抄写实现，抄完切换启动命令，用同一套接口验收，为 Python 后端学习提供清晰的起手路径（详见 LEARNING.md）。
+
+**English** — A family-dinner invitation app built as a hands-on Python tutorial. It ships a full reference backend plus a "shell + TODO" practice backend sharing one frontend — copy the implementation into the practice version, flip the start command, and validate against the same API for a clear on-ramp to Python backend development (see LEARNING.md).
 
 ## 结构
 
