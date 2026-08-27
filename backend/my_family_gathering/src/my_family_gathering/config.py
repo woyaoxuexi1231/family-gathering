@@ -20,11 +20,17 @@ DEFAULT_DATA_PATH = PROJECT_ROOT / "data" / "my_gathering.json"
 class Settings(BaseSettings):
     # pydantic 的“配置的配置”，
     model_config = SettingsConfigDict(
+        # 指定加载环境变量的文件路径。额外还要加载这个配置文件的配置
         env_file=str(PROJECT_ROOT / ".env"),
+        # 指定读取 .env 文件时使用的字符编码为 utf-8。
         env_file_encoding="utf-8",
+        # 忽略模型中未定义的额外字段。
+        # 这里我只定义了 app_host, app_port, cors_origins, gathering_title, gathering_when, gathering_where, gathering_note, data_path。
+        # 这几个配置，在 extra="ignore" 的情况下，env文件如果有其他的配置，那么是不会去理会的
         extra="ignore",
     )
 
+    # http服务的配置信息
     app_host: str = "127.0.0.1"
     app_port: int = 8800
     cors_origins: list[str] = [
@@ -32,6 +38,7 @@ class Settings(BaseSettings):
         "http://localhost:5173",
     ]
 
+    # 聚餐活动的的信息
     gathering_title: str = "我的家庭聚餐（练习）"
     gathering_when: str = "待定"
     gathering_where: str = "待定"
